@@ -1,8 +1,8 @@
 use std::collections::HashMap;
-use std::hash::Hash;
+use std::io::{Error, ErrorKind};
 
 use log::info;
-use sqlx::{Column, Pool, Postgres, Row, TypeInfo, ValueRef};
+use sqlx::{Column, PgPool, Pool, Postgres, Row, TypeInfo, ValueRef};
 use sqlx::postgres::{PgPoolOptions, PgRow};
 
 /// Connect to database
@@ -25,9 +25,9 @@ pub async fn connect(db: &str, username: &str, password: &str, host: &str, port:
     Ok(pool)
 }
 
-/// Store value in enum
-/// so SQL result can be in HashMap<String, SqlResult>
-#[derive(Debug)]
+/// Store values through enum
+/// so SQL result can be in a single HashMap<String, SqlResult>
+#[derive(Debug, Clone)]
 pub enum SqlResult {
     BOOL(bool),
     String(String),
@@ -36,6 +36,45 @@ pub enum SqlResult {
     TIME(chrono::NaiveTime),
     Null(),
     UnknownType(),
+}
+
+impl SqlResult {
+    /// if you want to get i32 value from SqlResult::I32
+    /// e.g. calling SqlResult::I32(12).to_i32() returns 12
+    pub fn to_i32(self) -> Result<i32, Error> {
+        match self {
+            SqlResult::I32(val) => { Ok(val) }
+            _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::I32")) }
+        }
+    }
+
+    pub fn to_string(self) -> Result<String, Error> {
+        match self {
+            SqlResult::String(val) => { Ok(val) }
+            _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::String")) }
+        }
+    }
+
+    pub fn to_bool(self) -> Result<bool, Error> {
+        match self {
+            SqlResult::BOOL(val) => { Ok(val) }
+            _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::BOOL")) }
+        }
+    }
+
+    pub fn to_date(self) -> Result<chrono::NaiveDate, Error> {
+        match self {
+            SqlResult::DATE(val) => { Ok(val) }
+            _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::DATE")) }
+        }
+    }
+
+    pub fn to_time(self) -> Result<chrono::NaiveTime, Error> {
+        match self {
+            SqlResult::TIME(val) => { Ok(val) }
+            _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::TIME")) }
+        }
+    }
 }
 
 /// convert PgRow into HashMap<String, SqlResult>
@@ -87,14 +126,14 @@ fn into_hashmap(row: PgRow) -> HashMap<String, SqlResult> {
     return result;
 }
 
-/// Query SQL and return HashMap<String, SqlResults>
-pub async fn query(pool: Pool<Postgres>, sql: &str) -> Result<Vec<HashMap<String, SqlResult>>, sqlx::Error> {
+/// Query SQL and return Vec<HashMap<String, SqlResults>>
+pub async fn query(pool: &PgPool, sql: &str) -> Result<Vec<HashMap<String, SqlResult>>, sqlx::Error> {
     let start_time = std::time::Instant::now();
 
     info!("Querying: {}", sql);
 
     let rows = sqlx::query(sql)
-        .fetch_all(&pool)
+        .fetch_all(pool)
         .await?;
 
     let mut results = Vec::new();
