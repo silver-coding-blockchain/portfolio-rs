@@ -39,8 +39,10 @@ pub enum SqlResult {
 }
 
 impl SqlResult {
-    /// if you want to get i32 value from SqlResult::I32
-    /// e.g. calling SqlResult::I32(12).to_i32() returns 12
+    // if you want to get i32 value from SqlResult::I32 use these functions
+    // e.g. calling SqlResult::I32(12).to_i32().unwrap() returns 12
+
+    /// convert SqlResult:I32 to i32
     pub fn to_i32(self) -> Result<i32, Error> {
         match self {
             SqlResult::I32(val) => { Ok(val) }
@@ -48,6 +50,7 @@ impl SqlResult {
         }
     }
 
+    /// convert SqlResult::String to String
     pub fn to_string(self) -> Result<String, Error> {
         match self {
             SqlResult::String(val) => { Ok(val) }
@@ -55,6 +58,7 @@ impl SqlResult {
         }
     }
 
+    /// convert SqlResult:BOOL to bool
     pub fn to_bool(self) -> Result<bool, Error> {
         match self {
             SqlResult::BOOL(val) => { Ok(val) }
@@ -62,6 +66,7 @@ impl SqlResult {
         }
     }
 
+    /// convert SqlResult:DATE to chrono::NaiveDate
     pub fn to_date(self) -> Result<chrono::NaiveDate, Error> {
         match self {
             SqlResult::DATE(val) => { Ok(val) }
@@ -69,6 +74,7 @@ impl SqlResult {
         }
     }
 
+    /// convert SqlResult:TIME to chrono::NaiveTime
     pub fn to_time(self) -> Result<chrono::NaiveTime, Error> {
         match self {
             SqlResult::TIME(val) => { Ok(val) }
