@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::io::{Error, ErrorKind};
 
 use log::info;
+use serde::Serialize;
 use sqlx::{Column, PgPool, Pool, Postgres, Row, TypeInfo, ValueRef};
 use sqlx::postgres::{PgPoolOptions, PgRow};
 
@@ -27,7 +28,9 @@ pub async fn connect(db: &str, username: &str, password: &str, host: &str, port:
 
 /// Store values through enum
 /// so SQL result can be in a single HashMap<String, SqlResult>
-#[derive(Debug, Clone)]
+/// then I don't need to write struct to map the result
+/// just use the Vec<HashMap<String, SqlResult>>
+#[derive(Debug, Clone, Serialize)]
 pub enum SqlResult {
     BOOL(bool),
     String(String),
@@ -54,6 +57,8 @@ impl SqlResult {
     pub fn to_string(self) -> Result<String, Error> {
         match self {
             SqlResult::String(val) => { Ok(val) }
+            // if null then return ""
+            SqlResult::Null() => { Ok(String::new()) }
             _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::String")) }
         }
     }
