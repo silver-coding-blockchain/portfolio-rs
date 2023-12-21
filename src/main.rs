@@ -1,5 +1,6 @@
 mod server;
 mod db;
+mod info;
 
 /// all init actions
 fn init() {

@@ -27,6 +27,6 @@ pub async fn start() -> std::io::Result<()> {
             .app_data(web::Data::new(web_db.clone()))
             .service(info::platform_links)
             .service(info::artist_info)
-            .service(info::song_info)
+            .service(info::track_info)
     }).bind(("127.0.0.1", 8080))?.run().await
 }
