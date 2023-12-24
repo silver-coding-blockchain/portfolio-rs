@@ -138,7 +138,7 @@ fn into_hashmap(row: PgRow) -> HashMap<String, SqlResult> {
 }
 
 /// Query SQL and return Vec<HashMap<String, SqlResults>>
-pub async fn query(pool: &PgPool, sql: &str) -> Result<Vec<HashMap<String, SqlResult>>, sqlx::Error> {
+pub async fn query(pool: &PgPool, sql: &String) -> Result<Vec<HashMap<String, SqlResult>>, sqlx::Error> {
     let start_time = std::time::Instant::now();
 
     info!("Querying: {}", sql);
