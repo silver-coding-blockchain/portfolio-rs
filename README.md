@@ -1,5 +1,5 @@
 # portfolio-rs
-My portfolio website Backend written in Rust using actix-web framework.
+My blazingly fast portfolio website Backend written in Rust using actix-web framework.
 
 db.rs contains database operation.
 
