@@ -1,5 +1,4 @@
 use actix_web::{HttpResponse, post, Responder, web};
-use log::info;
 use serde::Deserialize;
 use sqlx::PgPool;
 
@@ -13,8 +12,6 @@ async fn platform_links(req_body: String, web_db: web::Data<PgPool>) -> impl Res
     struct Req {
         artist_id: i32,
     }
-
-    info!("req_body: {}", req_body);
 
     let req: Req = serde_json::from_str(&req_body).unwrap();
 
@@ -54,26 +51,20 @@ async fn track_info(req_body: String, web_db: web::Data<PgPool>) -> impl Respond
         latest: Option<bool>,
     }
 
-    info!("req_body: {}", req_body);
-
     let req: Req = serde_json::from_str(&req_body).unwrap();
 
     let mut sql_str = String::new();
 
     if req.track_id.is_some() {
-        sql_str = format!(
-            "
-            select a.track_name, a.track_name_cn, a.release_date, a.description, a.description_cn, b.link_url, c.artist_name, d.platform_name
-            from portfolio.tracks a
-            left join portfolio.track_links b on a.track_id = b.track_id
-            left join portfolio.artists c on a.artist_id = c.artist_id
-            left join portfolio.platforms d on b.platform_id = d.platform_id
-            where a.track_id = {}", req.track_id.unwrap())
-    }
-    else if req.latest.is_some() {
+        sql_str = format!("select a.track_name, a.track_name_cn, a.release_date, a.description, a.description_cn, b.link_url, c.artist_name, d.platform_name
+        from portfolio.tracks a
+        left join portfolio.track_links b on a.track_id = b.track_id
+        left join portfolio.artists c on a.artist_id = c.artist_id
+        left join portfolio.platforms d on b.platform_id = d.platform_id
+        where a.track_id = {}", req.track_id.unwrap())
+    } else if req.latest.is_some() {
         if req.latest.unwrap() {
-            sql_str = String::from("
-            select a.track_name, a.track_name_cn, a.release_date, a.description, a.description_cn, b.link_url, c.artist_name, d.platform_name
+            sql_str = String::from("select a.track_name, a.track_name_cn, a.release_date, a.description, a.description_cn, b.link_url, c.artist_name, d.platform_name
             from portfolio.tracks a
             left join portfolio.track_links b on a.track_id = b.track_id
             left join portfolio.artists c on a.artist_id = c.artist_id

@@ -10,8 +10,6 @@ use sqlx::postgres::{PgPoolOptions, PgRow};
 pub async fn connect(db: &str, username: &str, password: &str, host: &str, port: &str, db_name: &str) -> Result<Pool<Postgres>, sqlx::Error> {
     let start_time = std::time::Instant::now();
 
-    info!("Connecting: {}:{} | Database:{} | User:{}", host, port, db_name, username);
-
     let url = format!("{}://{}:{}@{}:{}/{}", db, username, password, host, port, db_name);
 
     // Create a connection pool
@@ -21,7 +19,8 @@ pub async fn connect(db: &str, username: &str, password: &str, host: &str, port:
 
     let used_time = start_time.elapsed().as_millis();
 
-    info!("Time used for connecting database: {} ms", used_time);
+    info!("🏎️ Connecting: {}:{} | Database:{} | User:{}\n
+⏳ Time used: {} ms", host, port, db_name, username, used_time);
 
     Ok(pool)
 }
@@ -141,7 +140,6 @@ fn into_hashmap(row: PgRow) -> HashMap<String, SqlResult> {
 pub async fn query(pool: &PgPool, sql: &String) -> Result<Vec<HashMap<String, SqlResult>>, sqlx::Error> {
     let start_time = std::time::Instant::now();
 
-    info!("Querying: {}", sql);
 
     let rows = sqlx::query(sql)
         .fetch_all(pool)
@@ -156,7 +154,10 @@ pub async fn query(pool: &PgPool, sql: &String) -> Result<Vec<HashMap<String, Sq
 
     let used_time = start_time.elapsed().as_millis();
 
-    info!("Time used for the query: {} ms", used_time);
+    info!("\
+🔍 Querying: {} \n
+🎉 Result: {:?} \n
+⌚️ Time used: {} ms ", sql, results, used_time );
 
     Ok(results)
 }

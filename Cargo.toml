@@ -9,7 +9,7 @@ edition = "2021"
 actix-web = { version = "4.4.1", features = ["openssl"] }
 openssl = "0.10.62"
 actix-cors = "0.6.5"
-env_logger = "0.10.1"
+log4rs = "1.2.0"
 log = "0.4.20"
 sqlx = { version = "0.7.3", features = ["runtime-tokio", "tls-rustls", "postgres", "chrono"] }
 tokio = { version = "1.35.1", features = ["full"] }

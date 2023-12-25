@@ -1,10 +1,14 @@
+use log::info;
+
 mod server;
 mod db;
-mod info;
+mod api;
 
 /// all init actions
 fn init() {
-    env_logger::init();
+    log4rs::init_file("config/log4rs.yaml", Default::default()).unwrap();
+
+    info!("🚀 Initiating log4rs 📝");
 }
 
 #[actix_web::main]
