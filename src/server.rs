@@ -31,7 +31,7 @@ pub async fn start() -> std::io::Result<()> {
             App::new()
                 .wrap(cors)
                 .app_data(web::Data::new(web_db.clone()))
-                .service(api::platform_links)
+                .service(api::platform_info)
                 .service(api::artist_info)
                 .service(api::track_info)
         }).bind(("127.0.0.1", 8080))?.run().await
@@ -73,7 +73,7 @@ pub async fn start() -> std::io::Result<()> {
             App::new()
                 .wrap(cors)
                 .app_data(web::Data::new(web_db.clone()))
-                .service(api::platform_links)
+                .service(api::platform_info)
                 .service(api::artist_info)
                 .service(api::track_info)
         }).bind_openssl(("0.0.0.0", 8080), builder)?.run().await

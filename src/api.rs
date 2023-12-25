@@ -5,8 +5,8 @@ use sqlx::PgPool;
 use crate::db;
 
 /// get music platform links
-#[post("/api/getPlatformLinks")]
-async fn platform_links(req_body: String, web_db: web::Data<PgPool>) -> impl Responder {
+#[post("/api/getPlatformInfo")]
+async fn platform_info(req_body: String, web_db: web::Data<PgPool>) -> impl Responder {
     // request body struct
     #[derive(Deserialize, Debug)]
     struct Req {
@@ -15,8 +15,10 @@ async fn platform_links(req_body: String, web_db: web::Data<PgPool>) -> impl Res
 
     let req: Req = serde_json::from_str(&req_body).unwrap();
 
+    let sql_str = format!("select pl.platform_id, p.platform_name, p.platform_icon, pl.link_url from portfolio.platforms p left join portfolio.platform_links pl on p.platform_id = pl.platform_id where artist_id = {}", req.artist_id);
+
     // query from database
-    let res = db::query(&web_db, &format!("select pl.platform_id, p.platform_name, pl.link_url from portfolio.platforms p left join portfolio.platform_links pl on p.platform_id = pl.platform_id where artist_id = {}", req.artist_id)).await.unwrap();
+    let res = db::query(&web_db, &sql_str).await.unwrap();
 
     let res_body = serde_json::to_string(&res).unwrap();
 
