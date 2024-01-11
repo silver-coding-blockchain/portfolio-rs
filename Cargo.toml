@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = { version = "4.4.1", features = ["openssl"] }
-openssl = "0.10.62"
+actix-web = { version = "4.4.1", features = ["rustls-0_21"] }
+rustls = "0.21.10"
 actix-cors = "0.6.5"
 log4rs = "1.2.0"
 log = "0.4.20"
@@ -17,3 +17,4 @@ chrono = { version = "0.4.31", features = ["serde"] }
 serde = "1.0.193"
 serde_json = "1.0.108"
 lazy_static = "1.4.0"
+rustls-pemfile = "1.0.4"

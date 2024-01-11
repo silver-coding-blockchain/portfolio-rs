@@ -1,10 +1,42 @@
+use std::{fs::File, io::BufReader};
+
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use log::info;
-use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
+use rustls::{Certificate, PrivateKey, ServerConfig};
+use rustls_pemfile::{certs, rsa_private_keys};
 
-use crate::db;
 use crate::api;
+use crate::db;
+
+fn rustls_config() -> ServerConfig {
+    // load TLS key/cert files
+    let cert_file = &mut BufReader::new(File::open("portfolio.cloudiful.cn_bundle.pem").unwrap());
+    let key_file = &mut BufReader::new(File::open("portfolio.cloudiful.cn.key").unwrap());
+
+    // convert files to key/cert objects
+    let cert_chain = certs(cert_file)
+        .unwrap()
+        .into_iter()
+        .map(Certificate)
+        .collect();
+    let mut keys: Vec<PrivateKey> = rsa_private_keys(key_file)
+        .unwrap()
+        .into_iter()
+        .map(PrivateKey)
+        .collect();
+
+    // exit if no keys could be parsed
+    if keys.is_empty() {
+        eprintln!("Could not locate keys.");
+        std::process::exit(1);
+    }
+
+    ServerConfig::builder()
+        .with_safe_defaults()
+        .with_no_client_auth()
+        .with_single_cert(cert_chain, keys.remove(0)).unwrap()
+}
 
 /// start listening get and post request
 pub async fn start() -> std::io::Result<()> {
@@ -34,6 +66,7 @@ pub async fn start() -> std::io::Result<()> {
                 .service(api::platform_info)
                 .service(api::artist_info)
                 .service(api::track_info)
+                .service(api::all_tracks)
         }).bind(("127.0.0.1", 8080))?.run().await
     } else {
         info!("💵 Starting in 😱 !prod! mode 🚨");
@@ -58,9 +91,7 @@ pub async fn start() -> std::io::Result<()> {
 
 
         // my ssl cert
-        let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
-        builder.set_private_key_file("portfolio.cloudiful.cn.key", SslFiletype::PEM).unwrap();
-        builder.set_certificate_chain_file("portfolio.cloudiful.cn_bundle.pem").unwrap();
+        let config = rustls_config();
 
         // listen to https in prod mode
         HttpServer::new(move || {
@@ -76,6 +107,7 @@ pub async fn start() -> std::io::Result<()> {
                 .service(api::platform_info)
                 .service(api::artist_info)
                 .service(api::track_info)
-        }).bind_openssl(("0.0.0.0", 8080), builder)?.run().await
+                .service(api::all_tracks)
+        }).bind_rustls_021(("0.0.0.0", 8080), config)?.run().await
     }
 }

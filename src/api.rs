@@ -82,3 +82,24 @@ async fn track_info(req_body: String, web_db: web::Data<PgPool>) -> impl Respond
 
     HttpResponse::Ok().body(res_body)
 }
+
+/// get all tracks (with each link return a line)
+#[post("/api/getAllTracks")]
+async fn all_tracks(web_db: web::Data<PgPool>) -> impl Responder {
+    let mut sql_str = String::new();
+
+    sql_str = String::from("select a.track_name, a.track_name_cn, a.release_date, a.description, a.description_cn, b.link_url, c.artist_name, d.platform_name
+from web_db.portfolio.tracks a
+left join web_db.portfolio.track_links b on a.track_id = b.track_id
+left join web_db.portfolio.artists c on a.artist_id = c.artist_id
+left join web_db.portfolio.platforms d on b.platform_id = d.platform_id
+ order by release_date desc");
+
+    // query from database
+    let res = db::query(&web_db, &sql_str).await.unwrap();
+
+    let res_body = serde_json::to_string(&res).unwrap();
+
+    HttpResponse::Ok().body(res_body)
+}
+
