@@ -26,16 +26,18 @@ fn rustls_config() -> ServerConfig {
         .map(PrivateKey)
         .collect();
 
-    // exit if no keys could be parsed
-    if keys.is_empty() {
-        eprintln!("Could not locate keys.");
-        std::process::exit(1);
-    }
-
     ServerConfig::builder()
         .with_safe_defaults()
         .with_no_client_auth()
         .with_single_cert(cert_chain, keys.remove(0)).unwrap()
+}
+
+// store all the service in one place
+fn init(cfg: &mut web::ServiceConfig) {
+    cfg.service(api::platform_info);
+    cfg.service(api::artist_info);
+    cfg.service(api::track_info);
+    cfg.service(api::all_tracks);
 }
 
 /// start listening get and post request
@@ -63,10 +65,7 @@ pub async fn start() -> std::io::Result<()> {
             App::new()
                 .wrap(cors)
                 .app_data(web::Data::new(web_db.clone()))
-                .service(api::platform_info)
-                .service(api::artist_info)
-                .service(api::track_info)
-                .service(api::all_tracks)
+                .configure(init)
         }).bind(("127.0.0.1", 8080))?.run().await
     } else {
         info!("💵 Starting in 😱 !prod! mode 🚨");
@@ -104,10 +103,7 @@ pub async fn start() -> std::io::Result<()> {
             App::new()
                 .wrap(cors)
                 .app_data(web::Data::new(web_db.clone()))
-                .service(api::platform_info)
-                .service(api::artist_info)
-                .service(api::track_info)
-                .service(api::all_tracks)
+                .configure(init)
         }).bind_rustls_021(("0.0.0.0", 8080), config)?.run().await
     }
 }
