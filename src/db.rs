@@ -33,60 +33,61 @@ pub async fn connect(db: &str, username: &str, password: &str, host: &str, port:
 pub enum SqlResult {
     BOOL(bool),
     String(String),
-    JSON(serde_json::Value),
+    StringVec(Vec<String>),
     I32(i32),
     DATE(chrono::NaiveDate),
     TIME(chrono::NaiveTime),
+    JSON(serde_json::Value),
     Null(),
     UnknownType(),
 }
 
-impl SqlResult {
-    // if you want to get i32 value from SqlResult::I32 use these functions
-    // e.g. calling SqlResult::I32(12).to_i32().unwrap() returns 12
-
-    /// convert SqlResult:I32 to i32
-    pub fn to_i32(self) -> Result<i32, Error> {
-        match self {
-            SqlResult::I32(val) => { Ok(val) }
-            _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::I32")) }
-        }
-    }
-
-    /// convert SqlResult::String to String
-    pub fn to_string(self) -> Result<String, Error> {
-        match self {
-            SqlResult::String(val) => { Ok(val) }
-            // if null then return ""
-            SqlResult::Null() => { Ok(String::new()) }
-            _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::String")) }
-        }
-    }
-
-    /// convert SqlResult:BOOL to bool
-    pub fn to_bool(self) -> Result<bool, Error> {
-        match self {
-            SqlResult::BOOL(val) => { Ok(val) }
-            _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::BOOL")) }
-        }
-    }
-
-    /// convert SqlResult:DATE to chrono::NaiveDate
-    pub fn to_date(self) -> Result<chrono::NaiveDate, Error> {
-        match self {
-            SqlResult::DATE(val) => { Ok(val) }
-            _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::DATE")) }
-        }
-    }
-
-    /// convert SqlResult:TIME to chrono::NaiveTime
-    pub fn to_time(self) -> Result<chrono::NaiveTime, Error> {
-        match self {
-            SqlResult::TIME(val) => { Ok(val) }
-            _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::TIME")) }
-        }
-    }
-}
+// impl SqlResult {
+//     // if you want to get i32 value from SqlResult::I32 use these functions
+//     // e.g. calling SqlResult::I32(12).to_i32().unwrap() returns 12
+//
+//     /// convert SqlResult:I32 to i32
+//     pub fn to_i32(self) -> Result<i32, Error> {
+//         match self {
+//             SqlResult::I32(val) => { Ok(val) }
+//             _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::I32")) }
+//         }
+//     }
+//
+//     /// convert SqlResult::String to String
+//     pub fn to_string(self) -> Result<String, Error> {
+//         match self {
+//             SqlResult::String(val) => { Ok(val) }
+//             // if null then return ""
+//             SqlResult::Null() => { Ok(String::new()) }
+//             _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::String")) }
+//         }
+//     }
+//
+//     /// convert SqlResult:BOOL to bool
+//     pub fn to_bool(self) -> Result<bool, Error> {
+//         match self {
+//             SqlResult::BOOL(val) => { Ok(val) }
+//             _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::BOOL")) }
+//         }
+//     }
+//
+//     /// convert SqlResult:DATE to chrono::NaiveDate
+//     pub fn to_date(self) -> Result<chrono::NaiveDate, Error> {
+//         match self {
+//             SqlResult::DATE(val) => { Ok(val) }
+//             _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::DATE")) }
+//         }
+//     }
+//
+//     /// convert SqlResult:TIME to chrono::NaiveTime
+//     pub fn to_time(self) -> Result<chrono::NaiveTime, Error> {
+//         match self {
+//             SqlResult::TIME(val) => { Ok(val) }
+//             _ => { Err(Error::new(ErrorKind::InvalidInput, "Can only use this function on SqlResult::TIME")) }
+//         }
+//     }
+// }
 
 /// convert PgRow into HashMap<String, SqlResult>
 fn into_hashmap(row: PgRow) -> HashMap<String, SqlResult> {
@@ -114,10 +115,6 @@ fn into_hashmap(row: PgRow) -> HashMap<String, SqlResult> {
                     let value: String = row.get(column.name());
                     result_value = SqlResult::String(value);
                 }
-                "JSON" => {
-                    let value: serde_json::Value = row.get(column.name());
-                    result_value = SqlResult::JSON(value);
-                }
                 "INT4" => {
                     let value: i32 = row.get(column.name());
                     result_value = SqlResult::I32(value);
@@ -129,6 +126,14 @@ fn into_hashmap(row: PgRow) -> HashMap<String, SqlResult> {
                 "TIME" => {
                     let value: chrono::NaiveTime = row.get(column.name());
                     result_value = SqlResult::TIME(value);
+                }
+                "JSON" => {
+                    let value: serde_json::Value = row.get(column.name());
+                    result_value = SqlResult::JSON(value);
+                }
+                "StringVec" => {
+                    let value: Vec<String> = row.get(column.name());
+                    result_value = SqlResult::StringVec(value);
                 }
                 _ => {
                     info!("Can't convert SQL type {} to Rust type.", column.type_info().name());
