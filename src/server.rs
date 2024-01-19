@@ -33,9 +33,9 @@ fn rustls_config() -> ServerConfig {
 }
 
 // store all the service in one place
-fn init(cfg: &mut web::ServiceConfig) {
+fn services(cfg: &mut web::ServiceConfig) {
     cfg.service(api::platform_info);
-    cfg.service(api::artist_info);
+    cfg.service(api::author_info);
     cfg.service(api::track_info);
     cfg.service(api::all_tracks);
 }
@@ -65,7 +65,7 @@ pub async fn start() -> std::io::Result<()> {
             App::new()
                 .wrap(cors)
                 .app_data(web::Data::new(web_db.clone()))
-                .configure(init)
+                .configure(services)
         }).bind(("127.0.0.1", 8080))?.run().await
     } else {
         info!("💵 Starting in 😱 !prod! mode 🚨");
@@ -103,7 +103,7 @@ pub async fn start() -> std::io::Result<()> {
             App::new()
                 .wrap(cors)
                 .app_data(web::Data::new(web_db.clone()))
-                .configure(init)
+                .configure(services)
         }).bind_rustls_021(("0.0.0.0", 8080), config)?.run().await
     }
 }
