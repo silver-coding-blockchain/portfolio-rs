@@ -125,7 +125,7 @@ order by release_date desc");
 }
 
 /// get all games
-#[post("/api/getAllTracks")]
+#[post("/api/getAllGames")]
 async fn all_games(web_db: web::Data<PgPool>) -> impl Responder {
     let mut sql_str = String::new();
 
