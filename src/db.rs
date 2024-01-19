@@ -33,6 +33,7 @@ pub async fn connect(db: &str, username: &str, password: &str, host: &str, port:
 pub enum SqlResult {
     BOOL(bool),
     String(String),
+    JSON(serde_json::Value),
     I32(i32),
     DATE(chrono::NaiveDate),
     TIME(chrono::NaiveTime),
@@ -103,6 +104,7 @@ fn into_hashmap(row: PgRow) -> HashMap<String, SqlResult> {
         } else {
             // if the value is not null
             // use match to get desired type value and put it into hashmap
+            info!("typeinfo: {}" , column.type_info().name());
             match column.type_info().name() {
                 "BOOL" => {
                     let value: bool = row.get(column.name());
@@ -111,6 +113,10 @@ fn into_hashmap(row: PgRow) -> HashMap<String, SqlResult> {
                 "TEXT" => {
                     let value: String = row.get(column.name());
                     result_value = SqlResult::String(value);
+                }
+                "JSON" => {
+                    let value: serde_json::Value = row.get(column.name());
+                    result_value = SqlResult::JSON(value);
                 }
                 "INT4" => {
                     let value: i32 = row.get(column.name());
