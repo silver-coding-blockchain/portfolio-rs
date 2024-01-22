@@ -115,6 +115,10 @@ fn into_hashmap(row: PgRow) -> HashMap<String, SqlResult> {
                     let value: String = row.get(column.name());
                     result_value = SqlResult::String(value);
                 }
+                "TEXT[]" => {
+                    let value: Vec<String> = row.get(column.name());
+                    result_value = SqlResult::StringVec(value);
+                }
                 "INT4" => {
                     let value: i32 = row.get(column.name());
                     result_value = SqlResult::I32(value);

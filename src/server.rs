@@ -38,6 +38,7 @@ fn services(cfg: &mut web::ServiceConfig) {
     cfg.service(api::author_info);
     cfg.service(api::track_info);
     cfg.service(api::all_tracks);
+    cfg.service(api::all_games);
 }
 
 /// start listening get and post request
