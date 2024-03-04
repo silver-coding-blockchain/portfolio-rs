@@ -108,9 +108,8 @@ group by a.track_name, a.track_name_cn, a.release_date, a.description, a.descrip
 /// get all tracks
 #[post("/api/getAllTracks")]
 async fn all_tracks(web_db: web::Data<PgPool>) -> impl Responder {
-    let mut sql_str = String::new();
 
-    sql_str = String::from("select a.track_name,
+    let sql_str = String::from("select a.track_name,
        a.track_name_cn,
        a.release_date,
        a.description,
@@ -139,9 +138,8 @@ order by release_date desc;");
 /// get all games
 #[post("/api/getAllGames")]
 async fn all_games(web_db: web::Data<PgPool>) -> impl Responder {
-    let mut sql_str = String::new();
 
-    sql_str = String::from("select a.game_name,
+    let sql_str = String::from("select a.game_name,
        a.game_name_cn,
        a.release_date,
        a.description,
@@ -170,9 +168,8 @@ order by release_date desc");
 /// get all videos
 #[post("/api/getAllVideos")]
 async fn all_videos(web_db: web::Data<PgPool>) -> impl Responder {
-    let mut sql_str = String::new();
 
-    sql_str = String::from("select a.video_name,
+    let sql_str = String::from("select a.video_name,
        a.video_name_cn,
        a.release_date,
        a.description,
