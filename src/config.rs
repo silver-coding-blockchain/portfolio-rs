@@ -65,10 +65,10 @@ impl Config {
                 let config: Config = toml::from_str(&content).expect("parsing toml error");
                 config
             }
-            Err(e) => {
+            Err(_e) => {
                 let c = Config::new();
                 Config::save(&c);
-                panic!("Please edit your config file before running {}", e);
+                panic!("Please edit your config file before running.");
             }
         }
     }
