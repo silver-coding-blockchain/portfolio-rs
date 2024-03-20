@@ -104,7 +104,7 @@ fn into_hashmap(row: PgRow) -> HashMap<String, SqlResult> {
         } else {
             // if the value is not null
             // use match to get desired type value and put it into hashmap
-            info!("typeinfo: {}" , column.type_info().name());
+            // info!("typeinfo: {}" , column.type_info().name());
             match column.type_info().name() {
                 "BOOL" => {
                     let value: bool = row.get(column.name());
