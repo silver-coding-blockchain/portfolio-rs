@@ -7,6 +7,7 @@ use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, rsa_private_keys};
 
 use crate::api;
+use crate::config::Config;
 use crate::db;
 
 fn rustls_config() -> ServerConfig {
@@ -44,20 +45,19 @@ fn services(cfg: &mut web::ServiceConfig) {
 
 /// start listening get and post request
 pub async fn start() -> std::io::Result<()> {
-    let mode = "dev";
+    let config = Config::read();
 
-    if mode == "dev" {
+    let host = config.db.host;
+    let port = config.db.port;
+    let db = config.db.name;
+    let username = config.db.username;
+    let password = config.db.passwd;
+
+    // connect to database
+    let web_db = db::connect("postgres", &username, &password, &host, &port, &db).await.unwrap();
+
+    if config.mode == "dev" {
         info!("🪜 Starting in 👷 dev mode 🛠️");
-
-        let host = std::env::var("db_host").expect("Add your database address in env first");
-        let port = std::env::var("db_port").expect("Add your database port in env first");
-        let db = std::env::var("db_name").expect("Add your database port in env first");
-        let username = std::env::var("db_username").expect("Add your username in env first");
-        let password = std::env::var("db_password").expect("Add your password in env first");
-
-        // connect to database
-        let web_db = db::connect("postgres", &username, &password, &host, &port, &db).await.unwrap();
-
 
         // listen to http in dev mode
         HttpServer::new(move || {
@@ -71,25 +71,6 @@ pub async fn start() -> std::io::Result<()> {
         }).bind(("127.0.0.1", 8080))?.run().await
     } else {
         info!("💵 Starting in 😱 !prod! mode 🚨");
-
-        let host = String::from("localhost");
-        let port = String::from("5432");
-
-        println!("Enter db_name:");
-        let mut db = String::new();
-        let _ = std::io::stdin().read_line(&mut db).unwrap();
-
-        println!("Enter username:");
-        let mut username = String::new();
-        let _ = std::io::stdin().read_line(&mut username).unwrap();
-
-        println!("Enter password:");
-        let mut password = String::new();
-        let _ = std::io::stdin().read_line(&mut password).unwrap();
-
-        // connect to database
-        let web_db = db::connect("postgres", &username, &password, &host, &port, &db).await.unwrap();
-
 
         // my ssl cert
         let config = rustls_config();

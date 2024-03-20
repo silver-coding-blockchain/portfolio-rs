@@ -18,3 +18,5 @@ serde = "1.0.194"
 serde_json = "1.0.111"
 lazy_static = "1.4.0"
 rustls-pemfile = "1.0.4"
+
+toml = "0.8.12"

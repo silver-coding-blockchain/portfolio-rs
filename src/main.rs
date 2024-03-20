@@ -3,6 +3,7 @@ use log::info;
 mod server;
 mod db;
 mod api;
+mod config;
 
 /// all init actions
 fn init() {
