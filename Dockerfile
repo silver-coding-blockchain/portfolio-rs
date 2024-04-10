@@ -14,6 +14,6 @@ RUN apt install curl -y
 
 COPY --from=builder /usr/local/cargo/bin/portfolio-rs /home/
 COPY ./config /home/config
-COPY portfolio.cloudiful* /home/config/
+COPY *cloudiful.cn* /home/
 WORKDIR /home/
 CMD ./portfolio-rs
