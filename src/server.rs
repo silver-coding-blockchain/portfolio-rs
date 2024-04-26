@@ -28,7 +28,7 @@ pub async fn start() -> std::io::Result<()> {
                              &config.db.passwd,
                              &config.db.host,
                              &config.db.port,
-                             &config.db.name).await.unwrap();
+                             &config.db.name).await;
 
     if config.mode == "dev" {
         info!("🪜 Starting in 👷 dev mode 🛠️");

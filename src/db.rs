@@ -1,27 +1,41 @@
 use std::collections::HashMap;
+use std::time::Duration;
 
-use log::info;
+use log::{error, info, warn};
 use serde::Serialize;
-use sqlx::{Column, PgPool, Pool, Postgres, Row, TypeInfo, ValueRef};
+use sqlx::{Column, Error, PgPool, Pool, Postgres, Row, TypeInfo, ValueRef};
 use sqlx::postgres::{PgPoolOptions, PgRow};
 
 /// Connect to database
-pub async fn connect(db: &str, username: &str, password: &str, host: &str, port: &str, db_name: &str) -> Result<Pool<Postgres>, sqlx::Error> {
-    let start_time = std::time::Instant::now();
-
+pub async fn connect(db: &str, username: &str, password: &str, host: &str, port: &str, db_name: &str) -> Pool<Postgres> {
     let url = format!("{}://{}:{}@{}:{}/{}", db, username, password, host, port, db_name);
 
-    // Create a connection pool
-    let pool = PgPoolOptions::new()
-        .max_connections(5)
-        .connect(&url).await?;
+    loop {
+        info!("💪Trying to connect to database");
 
-    let used_time = start_time.elapsed().as_millis();
+        let start_time = std::time::Instant::now();
 
-    info!("🏎️ Connecting: {}:{} | Database:{} | User:{}\n
+        let pool = PgPoolOptions::new().max_connections(5).connect(&url).await;
+
+        match pool {
+
+            // if connected. returns pool
+            Ok(pool) => {
+                let used_time = start_time.elapsed().as_millis();
+
+                info!("🏎️ Connecting: {}:{} | Database:{} | User:{}\n
 ⏳ Time used: {} ms", host, port, db_name, username, used_time);
 
-    Ok(pool)
+                return pool;
+            }
+
+            // if not retry in 30 seconds
+            Err(_) => {
+                error!("🙍Connecting to database failed, retry in 30 sec...");
+                tokio::time::sleep(Duration::from_secs(30)).await;
+            }
+        }
+    }
 }
 
 /// Store values through enum
